@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Scadenziario Professionale</title>
+  <meta name="description" content="Scadenziario professionale gratuito: scadenze fiscali, contratti, pagamenti e adempimenti. Funziona offline, dati solo sul tuo dispositivo.">
+  <meta name="theme-color" content="#1e3a5f">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/favicon.svg" type="image/svg+xml">
+  <link rel="icon" href="icons/icon-192.png" sizes="192x192" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Scadenziario">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <img src="icons/favicon.svg" alt="" width="32" height="32">
+      <div>
+        <h1>Scadenziario</h1>
+        <span class="sub" id="oggi"></span>
+      </div>
+    </div>
+    <button class="btn primary" id="btnNuova" type="button">+ Nuova</button>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-view="dashboard" role="tab">Riepilogo</button>
+    <button class="tab" data-view="elenco" role="tab">Elenco</button>
+    <button class="tab" data-view="calendario" role="tab">Calendario</button>
+    <button class="tab" data-view="impostazioni" role="tab">Impostazioni</button>
+  </nav>
+
+  <main>
+    <!-- RIEPILOGO -->
+    <section class="view active" id="view-dashboard">
+      <div class="stats" id="stats"></div>
+      <div id="installBox" class="card install hidden">
+        <div><strong>Installa l'app</strong><br><span class="muted">Aggiungila alla schermata Home per usarla anche offline.</span></div>
+        <button class="btn primary" id="btnInstalla" type="button">Installa</button>
+      </div>
+      <h2 class="section-title">Scadute</h2>
+      <div class="list" id="listScadute"></div>
+      <h2 class="section-title">Prossimi 30 giorni</h2>
+      <div class="list" id="listProssime"></div>
+    </section>
+
+    <!-- ELENCO -->
+    <section class="view" id="view-elenco">
+      <div class="filters card">
+        <input type="search" id="fCerca" placeholder="Cerca titolo, cliente, note…" aria-label="Cerca">
+        <select id="fStato" aria-label="Stato">
+          <option value="aperte">Da fare</option>
+          <option value="scadute">Scadute</option>
+          <option value="fatte">Completate</option>
+          <option value="tutte">Tutte</option>
+        </select>
+        <select id="fCategoria" aria-label="Categoria"></select>
+        <select id="fPeriodo" aria-label="Periodo">
+          <option value="tutto">Qualsiasi data</option>
+          <option value="7">Prossimi 7 giorni</option>
+          <option value="30">Prossimi 30 giorni</option>
+          <option value="90">Prossimi 90 giorni</option>
+          <option value="mese">Questo mese</option>
+          <option value="anno">Quest'anno</option>
+        </select>
+      </div>
+      <div class="totali muted" id="totaliElenco"></div>
+      <div class="list" id="listElenco"></div>
+    </section>
+
+    <!-- CALENDARIO -->
+    <section class="view" id="view-calendario">
+      <div class="cal-head card">
+        <button class="btn ghost" id="calPrev" type="button" aria-label="Mese precedente">‹</button>
+        <strong id="calTitolo"></strong>
+        <button class="btn ghost" id="calNext" type="button" aria-label="Mese successivo">›</button>
+        <button class="btn ghost small" id="calOggi" type="button">Oggi</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <h2 class="section-title" id="calGiornoTitolo"></h2>
+      <div class="list" id="calGiornoLista"></div>
+    </section>
+
+    <!-- IMPOSTAZIONI -->
+    <section class="view" id="view-impostazioni">
+      <div class="card">
+        <h3>Promemoria</h3>
+        <p class="muted">Notifiche del dispositivo per le scadenze entro il preavviso impostato. Funzionano quando apri l'app; per avvisi garantiti anche ad app chiusa, esporta in calendario (.ics) qui sotto.</p>
+        <button class="btn" id="btnNotifiche" type="button">Attiva notifiche</button>
+        <span class="muted" id="statoNotifiche"></span>
+      </div>
+
+      <div class="card">
+        <h3>Esporta / Importa</h3>
+        <div class="btn-row">
+          <button class="btn" id="btnIcs" type="button">📅 Esporta calendario (.ics)</button>
+          <button class="btn" id="btnCsv" type="button">📊 Esporta Excel (.csv)</button>
+          <button class="btn" id="btnBackup" type="button">💾 Backup (.json)</button>
+          <label class="btn" for="fileImport">📂 Ripristina backup</label>
+          <input type="file" id="fileImport" accept="application/json,.json" hidden>
+        </div>
+        <p class="muted">Il file .ics si importa gratis in Google Calendar, Apple Calendario o Outlook, con allarmi e ricorrenze.</p>
+      </div>
+
+      <div class="card">
+        <h3>Categorie</h3>
+        <div id="catList" class="chips"></div>
+        <form id="catForm" class="inline-form">
+          <input id="catNome" placeholder="Nuova categoria" maxlength="40" required>
+          <input id="catColore" type="color" value="#2f80ed" aria-label="Colore">
+          <button class="btn" type="submit">Aggiungi</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h3>Aspetto</h3>
+        <select id="tema" aria-label="Tema">
+          <option value="auto">Tema automatico</option>
+          <option value="chiaro">Chiaro</option>
+          <option value="scuro">Scuro</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <h3>Dati</h3>
+        <p class="muted">Tutti i dati restano solo su questo dispositivo (nessun account, nessun server, nessun costo). Fai un backup periodico.</p>
+        <div class="btn-row">
+          <button class="btn" id="btnDemo" type="button">Carica esempi</button>
+          <button class="btn danger" id="btnReset" type="button">Cancella tutto</button>
+        </div>
+      </div>
+      <p class="muted center small">Scadenziario Professionale · v<span id="versione"></span> · software libero</p>
+    </section>
+  </main>
+
+  <!-- FORM SCADENZA -->
+  <dialog id="dlg">
+    <form id="form" method="dialog">
+      <h2 id="dlgTitolo">Nuova scadenza</h2>
+      <input type="hidden" id="sId">
+      <label>Titolo *
+        <input id="sTitolo" required maxlength="120" placeholder="Es. F24 IVA mensile">
+      </label>
+      <div class="grid2">
+        <label>Data scadenza *
+          <input id="sData" type="date" required>
+        </label>
+        <label>Categoria
+          <select id="sCategoria"></select>
+        </label>
+      </div>
+      <div class="grid2">
+        <label>Importo (€)
+          <input id="sImporto" type="number" step="0.01" min="0" inputmode="decimal" placeholder="0,00">
+        </label>
+        <label>Cliente / Riferimento
+          <input id="sCliente" maxlength="80" placeholder="Es. Rossi Srl">
+        </label>
+      </div>
+      <div class="grid2">
+        <label>Ricorrenza
+          <select id="sRicorrenza">
+            <option value="">Nessuna</option>
+            <option value="settimanale">Settimanale</option>
+            <option value="mensile">Mensile</option>
+            <option value="bimestrale">Bimestrale</option>
+            <option value="trimestrale">Trimestrale</option>
+            <option value="semestrale">Semestrale</option>
+            <option value="annuale">Annuale</option>
+          </select>
+        </label>
+        <label>Preavviso (giorni)
+          <input id="sPreavviso" type="number" min="0" max="365" value="7">
+        </label>
+      </div>
+      <div class="grid2">
+        <label>Priorità
+          <select id="sPriorita">
+            <option value="normale">Normale</option>
+            <option value="alta">Alta</option>
+            <option value="bassa">Bassa</option>
+          </select>
+        </label>
+        <label class="check">
+          <input id="sFatto" type="checkbox"> Completata
+        </label>
+      </div>
+      <label>Note
+        <textarea id="sNote" rows="3" maxlength="2000" placeholder="Codice tributo, modalità di pagamento, documenti…"></textarea>
+      </label>
+      <p class="muted small" id="avvisoFestivo"></p>
+      <div class="dlg-actions">
+        <button class="btn danger" id="btnElimina" type="button">Elimina</button>
+        <span class="spacer"></span>
+        <button class="btn" id="btnDuplica" type="button">Duplica</button>
+        <button class="btn" value="cancel" type="button" id="btnAnnulla">Annulla</button>
+        <button class="btn primary" type="submit" id="btnSalva">Salva</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>

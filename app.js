@@ -1,7 +1,7 @@
 /* Scadenziario Professionale – PWA gratuita, dati solo in locale */
 'use strict';
 
-const VERSIONE = '1.0.0';
+const VERSIONE = '1.0.1';
 const KEY = 'scadenzario.v1';
 const KEY_NOTIF = 'scadenzario.notificate';
 const KEY_TEMA = 'scadenzario.tema';

@@ -1,5 +1,5 @@
 /* Service worker: funzionamento offline + promemoria in background (dove supportato) */
-const CACHE = 'scadenzario-v1.0.0';
+const CACHE = 'scadenzario-v1.0.1';
 const FILES = [
   './',
   './index.html',
